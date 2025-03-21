@@ -1,5 +1,6 @@
 # Ignore virtual environment
 .myenv/
+.myenv/bin
 .env
 *.pyc
 __pycache__/
@@ -30,4 +31,4 @@ logs/
 # Ignore cache and temp files
 .cache/
 *.bak
-.DS_Store
+.DS_Storecd

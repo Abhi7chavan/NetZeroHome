@@ -1,0 +1,139 @@
+<!-- Report Page Content -->
+<div class="h-full">
+    <h3 class="text-xl font-semibold text-green-700 mb-4">Report</h3>
+
+    <!-- Date Range Selector -->
+    <div class="mb-6">
+        <label class="text-gray-700 font-medium">Select Date Range:</label>
+        <div class="flex flex-col sm:flex-row gap-4 mt-2">
+            <input type="date" id="start-date" class="p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+            <span class="text-gray-600">to</span>
+            <input type="date" id="end-date" class="p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button id="generate-report" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">Generate Report</button>
+        </div>
+    </div>
+
+    <!-- Report Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-green-100 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-bolt text-green-600 text-2xl mr-2"></i>
+                <h4 class="text-lg font-medium text-gray-700">Total Energy Usage</h4>
+            </div>
+            <p id="total-usage" class="text-2xl font-bold text-gray-800 mt-2">0.0 kWh</p>
+        </div>
+        <div class="bg-blue-100 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-solar-panel text-blue-600 text-2xl mr-2"></i>
+                <h4 class="text-lg font-medium text-gray-700">Solar Generation</h4>
+            </div>
+            <p id="solar-gen" class="text-2xl font-bold text-gray-800 mt-2">0.0 kWh</p>
+        </div>
+        <div class="bg-yellow-100 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-leaf text-yellow-600 text-2xl mr-2"></i>
+                <h4 class="text-lg font-medium text-gray-700">Carbon Savings</h4>
+            </div>
+            <p id="carbon-saved" class="text-2xl font-bold text-gray-800 mt-2">0.0 kg</p>
+        </div>
+    </div>
+
+    <!-- Consumption Breakdown by Device -->
+    <div class="bg-gray-100 p-4 rounded-lg shadow mb-6">
+        <div class="flex items-center">
+            <i class="fas fa-chart-pie text-gray-600 text-2xl mr-2"></i>
+            <h4 class="text-lg font-medium text-gray-700">Consumption by Device</h4>
+        </div>
+        <table class="w-full mt-2 text-gray-800">
+            <thead>
+                <tr class="border-b">
+                    <th class="text-left py-2">Device</th>
+                    <th class="text-right py-2">Usage (kWh)</th>
+                    <th class="text-right py-2">Percentage</th>
+                </tr>
+            </thead>
+            <tbody id="device-breakdown">
+                <tr><td colspan="3" class="text-center py-2">Select a date range to see breakdown</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Export Button -->
+    <div class="mt-6">
+        <button id="export-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition" disabled>Export Report</button>
+    </div>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        // Simulated device data (kWh per day)
+        const deviceData = {
+            lights: 0.5,
+            fridge: 1.2,
+            tv: 0.8,
+            ac: 4.0,
+            heater: 3.5
+        };
+
+        // Elements
+        const startDate = document.getElementById('start-date');
+        const endDate = document.getElementById('end-date');
+        const generateBtn = document.getElementById('generate-report');
+        const totalUsage = document.getElementById('total-usage');
+        const solarGen = document.getElementById('solar-gen');
+        const carbonSaved = document.getElementById('carbon-saved');
+        const deviceBreakdown = document.getElementById('device-breakdown');
+        const exportBtn = document.getElementById('export-btn');
+
+        // Default dates (last 7 days)
+        const today = new Date();
+        endDate.value = today.toISOString().split('T')[0];
+        startDate.value = new Date(today - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // Generate report function
+        function generateReport() {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (days <= 0) {
+                alert('Please select a valid date range.');
+                return;
+            }
+
+            // Simulated calculations
+            const totalKWh = Object.values(deviceData).reduce((sum, val) => sum + val, 0) * days;
+            const solarKWh = totalKWh * 0.6; // Assume 60% from solar
+            const carbonKg = totalKWh * 0.5; // 0.5 kg CO2 per kWh saved
+
+            totalUsage.textContent = `${totalKWh.toFixed(1)} kWh`;
+            solarGen.textContent = `${solarKWh.toFixed(1)} kWh`;
+            carbonSaved.textContent = `${carbonKg.toFixed(1)} kg`;
+
+            // Device breakdown
+            const total = Object.values(deviceData).reduce((sum, val) => sum + val, 0) * days;
+            deviceBreakdown.innerHTML = Object.entries(deviceData).map(([device, usage]) => {
+                const deviceUsage = (usage * days).toFixed(1);
+                const percentage = ((usage * days) / total * 100).toFixed(1);
+                return `
+                    <tr class="border-b">
+                        <td class="py-2">${device.charAt(0).toUpperCase() + device.slice(1)}</td>
+                        <td class="text-right py-2">${deviceUsage} kWh</td>
+                        <td class="text-right py-2">${percentage}%</td>
+                    </tr>
+                `;
+            }).join('');
+
+            exportBtn.disabled = false; // Enable export after generating
+        }
+
+        // Event listeners
+        generateBtn.addEventListener('click', generateReport);
+        exportBtn.addEventListener('click', () => {
+            alert('Exporting report as PDF... (Simulated)');
+            // In a real app, this would trigger a file download
+        });
+
+        // Generate initial report on load
+        generateReport();
+    </script>
+</div>

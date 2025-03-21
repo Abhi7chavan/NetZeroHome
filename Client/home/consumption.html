@@ -1,0 +1,127 @@
+<!-- Consumption Page Content -->
+<div class="h-full">
+    <h3 class="text-xl font-semibold text-green-700 mb-4">Consumption</h3>
+
+    <!-- Device Selection -->
+    <div class="mb-6">
+        <label for="device-select" class="text-gray-700 font-medium">Select Device:</label>
+        <select id="device-select" class="mt-2 p-2 border border-gray-300 rounded-md w-full md:w-1/3 bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="lights">Lights</option>
+            <option value="fridge">Fridge</option>
+            <option value="tv">TV</option>
+            <option value="ac">Air Conditioner</option>
+            <option value="heater">Heater</option>
+        </select>
+    </div>
+
+    <!-- Live Consumption -->
+    <div class="bg-green-100 p-4 rounded-lg shadow mb-6">
+        <div class="flex items-center">
+            <i class="fas fa-bolt text-green-600 text-2xl mr-2"></i>
+            <h4 class="text-lg font-medium text-gray-700">Live Consumption</h4>
+        </div>
+        <p id="live-consumption" class="text-2xl font-bold text-gray-800 mt-2">0.0 W</p>
+        <p class="text-sm text-gray-600">Updating every 5 seconds</p>
+    </div>
+
+    <!-- 15-Minute Snapshot -->
+    <div class="bg-blue-100 p-4 rounded-lg shadow mb-6">
+        <div class="flex items-center">
+            <i class="fas fa-clock text-blue-600 text-2xl mr-2"></i>
+            <h4 class="text-lg font-medium text-gray-700">15-Minute Snapshot</h4>
+        </div>
+        <ul id="snapshot-list" class="mt-2 text-gray-800 list-disc list-inside">
+            <li>Loading snapshot...</li>
+        </ul>
+        <p class="text-sm text-gray-600 mt-2">Last 15 minutes, updated every minute</p>
+    </div>
+
+    <!-- Additional Features -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Total Consumption -->
+        <div class="bg-yellow-100 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-chart-line text-yellow-600 text-2xl mr-2"></i>
+                <h4 class="text-lg font-medium text-gray-700">Total Consumption Today</h4>
+            </div>
+            <p id="total-consumption" class="text-2xl font-bold text-gray-800 mt-2">0.0 kWh</p>
+        </div>
+        <!-- Efficiency Tip -->
+        <div class="bg-gray-100 p-4 rounded-lg shadow">
+            <div class="flex items-center">
+                <i class="fas fa-lightbulb text-gray-600 text-2xl mr-2"></i>
+                <h4 class="text-lg font-medium text-gray-700">Efficiency Tip</h4>
+            </div>
+            <p id="efficiency-tip" class="text-gray-800 mt-2">Turn off unused devices to save energy.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        // Device consumption rates (Watts) - simulated
+        const deviceRates = {
+            lights: 60,    // 60W for lights
+            fridge: 150,   // 150W for fridge
+            tv: 100,       // 100W for TV
+            ac: 1000,      // 1000W for AC
+            heater: 1200   // 1200W for heater
+        };
+
+        // Live consumption simulation
+        const liveConsumptionElement = document.getElementById('live-consumption');
+        let currentDevice = 'lights';
+        function updateLiveConsumption() {
+            let baseRate = deviceRates[currentDevice];
+            let variation = Math.random() * 10 - 5; // ±5W fluctuation
+            let liveValue = Math.max(0, baseRate + variation).toFixed(1);
+            liveConsumptionElement.textContent = `${liveValue} W`;
+        }
+        setInterval(updateLiveConsumption, 5000); // Update every 5 seconds
+
+        // Device selection
+        const deviceSelect = document.getElementById('device-select');
+        deviceSelect.addEventListener('change', (e) => {
+            currentDevice = e.target.value;
+            updateLiveConsumption(); // Immediate update on selection
+        });
+
+        // 15-Minute Snapshot
+        const snapshotList = document.getElementById('snapshot-list');
+        let snapshotData = [];
+        function updateSnapshot() {
+            let currentValue = parseFloat(liveConsumptionElement.textContent);
+            snapshotData.push(currentValue);
+            if (snapshotData.length > 15) snapshotData.shift(); // Keep last 15 minutes (1-min intervals)
+            snapshotList.innerHTML = snapshotData.map((val, idx) => 
+                `<li>${new Date(Date.now() - (14 - idx) * 60000).toLocaleTimeString()}: ${val.toFixed(1)} W</li>`
+            ).join('');
+        }
+        setInterval(updateSnapshot, 60000); // Update every minute
+        updateSnapshot(); // Initial call
+
+        // Total Consumption (simulated daily total)
+        const totalConsumptionElement = document.getElementById('total-consumption');
+        let totalKWh = 0;
+        function updateTotalConsumption() {
+            let currentWatts = parseFloat(liveConsumptionElement.textContent);
+            totalKWh += (currentWatts / 1000) * (5 / 3600); // Convert 5s of W to kWh
+            totalConsumptionElement.textContent = `${totalKWh.toFixed(2)} kWh`;
+        }
+        setInterval(updateTotalConsumption, 5000); // Sync with live update
+
+        // Efficiency Tip (randomized)
+        const tips = [
+            "Turn off unused devices to save energy.",
+            "Use LED bulbs for lower consumption.",
+            "Set AC to 24°C for efficiency.",
+            "Unplug chargers when not in use.",
+            "Run appliances during off-peak hours."
+        ];
+        const efficiencyTipElement = document.getElementById('efficiency-tip');
+        function updateTip() {
+            efficiencyTipElement.textContent = tips[Math.floor(Math.random() * tips.length)];
+        }
+        setInterval(updateTip, 30000); // New tip every 30 seconds
+        updateTip(); // Initial call
+    </script>
+</div>
