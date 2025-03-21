@@ -1,0 +1,33 @@
+# Ignore virtual environment
+.myenv/
+.env
+*.pyc
+__pycache__/
+
+# Ignore dependency files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore SQLite database and migrations
+*.db
+*.sqlite3
+server/alembic/versions/
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.swp
+
+# Ignore log files
+logs/
+*.log
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore cache and temp files
+.cache/
+*.bak
+.DS_Store
