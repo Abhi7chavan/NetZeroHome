@@ -3,7 +3,6 @@
 Revision ID: 01407f473690
 Revises: 
 Create Date: 2025-03-21 17:42:05.174823
-
 """
 from typing import Sequence, Union
 
@@ -20,7 +19,6 @@ depends_on: Union[str, Sequence[str], None] = None
 metadata = sa.MetaData()
 
 # Define tables with a specified schema (in this case "meta")
-
 User = sa.Table(
     'User',
     metadata,
@@ -114,9 +112,18 @@ Sensor = sa.Table(
     metadata,
     sa.Column('sensor_id', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('category', sa.String(), nullable=False),
+    sa.Column('category_id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('sensor_id'),
+    schema='meta'
+)
+
+Category = sa.Table(
+    'Category',
+    metadata,
+    sa.Column('category_id', sa.String(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('category_id'),
     schema='meta'
 )
 
@@ -141,7 +148,6 @@ HouseReading = sa.Table(
     sa.Column('time', sa.TIMESTAMP(), nullable=True),
     schema='meta'
 )
-
 
 def upgrade():
     # Create the "meta" schema if it does not exist
@@ -209,6 +215,13 @@ def upgrade():
         ['house_id'], ['house_id'],
         source_schema='meta', referent_schema='meta'
     )
+    
+    op.create_table(
+        Category.name,
+        *Category.columns,
+        *Category.constraints,
+        schema='meta'
+    )
 
     op.create_table(
         Sensor.name,
@@ -219,6 +232,11 @@ def upgrade():
     op.create_foreign_key(
         'fk_sensor_user', Sensor.name, User.name,
         ['user_id'], ['user_id'],
+        source_schema='meta', referent_schema='meta'
+    )
+    op.create_foreign_key(
+        'fk_sensor_category', Sensor.name, Category.name,
+        ['category_id'], ['category_id'],
         source_schema='meta', referent_schema='meta'
     )
 
@@ -261,8 +279,9 @@ def upgrade():
         source_schema='meta', referent_schema='meta'
     )
 
-
 def downgrade():
+    # Drop tables in reverse order, respecting dependencies
+    op.drop_constraint('fk_hr_user', HouseReading.name, schema='meta', type_='foreignkey')
     op.drop_table(HouseReading.name, schema='meta')
 
     op.drop_constraint('fk_hrim_item', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
@@ -271,8 +290,11 @@ def downgrade():
     op.drop_constraint('fk_hrim_house', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
     op.drop_table(HouseRoomItemMapping.name, schema='meta')
 
+    op.drop_constraint('fk_sensor_category', Sensor.name, schema='meta', type_='foreignkey')
     op.drop_constraint('fk_sensor_user', Sensor.name, schema='meta', type_='foreignkey')
     op.drop_table(Sensor.name, schema='meta')
+
+    op.drop_table(Category.name, schema='meta')
 
     op.drop_constraint('fk_room_house', Room.name, schema='meta', type_='foreignkey')
     op.drop_table(Room.name, schema='meta')
@@ -289,6 +311,6 @@ def downgrade():
     op.drop_table(License.name, schema='meta')
 
     op.drop_table(User.name, schema='meta')
-    
-    # Optionally, drop the schema itself:
+
+    # Optionally, drop the schema itself
     op.execute("DROP SCHEMA IF EXISTS meta CASCADE")

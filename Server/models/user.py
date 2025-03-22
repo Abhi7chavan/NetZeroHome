@@ -1,4 +1,4 @@
-from sqlalchemy import Integer,String,Column,func ,ARRAY ,DateTime
+from sqlalchemy import String,Column,func ,ARRAY ,DateTime
 import uuid
 from Server.configuration.database import Base
 
