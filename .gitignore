@@ -1,0 +1,10 @@
+.myenv/
+.myenv/lib/python3.12/site-packages/pip/_internal/commands/cache.py
+
+Server/**/*.pyc
+Server/**/__pycache__/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
