@@ -4,7 +4,7 @@ import time
 from package.logger import logger
 from starlette.responses import JSONResponse
 from handlers.user_handler import user_router
-
+from handlers.license_handler import license_router
 app = FastAPI()
 
 async def logging_middleware(request: Request, call_next):
@@ -41,7 +41,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 #routes
 app.include_router(user_router)
-
+app.include_router(license_router)
 
 #attach middleware
 app.middleware("http")(logging_middleware)
