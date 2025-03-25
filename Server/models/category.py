@@ -1,8 +1,8 @@
 import uuid
 from sqlalchemy import Column, String, JSON, Boolean, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from configuration.database import Base
 
-Base = declarative_base()
 
 
 class Category(Base):

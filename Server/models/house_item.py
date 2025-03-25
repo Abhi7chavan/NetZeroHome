@@ -1,4 +1,4 @@
-from Server.configuration.database import Base
+from configuration.database import Base
 from sqlalchemy import Column,Float,String,ARRAY
 import uuid
 
