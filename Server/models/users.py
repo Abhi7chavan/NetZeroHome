@@ -12,7 +12,7 @@ class Users(Base):
     password = Column(String)
     location = Column(String)
     features = Column(ARRAY(String))
-    householdItems = Column(ARRAY(String))
+    HouseholdItems = Column(ARRAY(String))
     SensorCount = Column(Integer)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

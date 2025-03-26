@@ -14,7 +14,7 @@ class License(Base):
     email = Column(String)
     location = Column(String)
     features = Column(ARRAY(String))
-    householdItems = Column(ARRAY(String))
+    HouseholdItems = Column(ARRAY(String))
     SensorCount = Column(Integer)
      
     
@@ -26,5 +26,5 @@ class licenseschema(BaseModel):
     email:str
     location:str
     features:list
-    householdItems:list
+    HouseholdItems:list
     SensorCount:int

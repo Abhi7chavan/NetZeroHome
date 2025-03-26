@@ -20,44 +20,50 @@ metadata = sa.MetaData()
 
 # Define tables with a specified schema (in this case "meta")
 User = sa.Table(
-    'User',
+    "User",
     metadata,
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
+    sa.Column('license_id', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('password', sa.String(), nullable=True),
     sa.Column('location', sa.String(), nullable=True),
     sa.Column('features', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('HouseholdItems', sa.ARRAY(sa.String()), nullable=True),
-    sa.Column('SensorCount', sa.ARRAY(sa.String()), nullable=True),
-    sa.Column('created_at', sa.Integer(), nullable=True),
-    sa.Column('updated_at', sa.Integer(), nullable=True),
+    sa.Column('SensorCount', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
     sa.PrimaryKeyConstraint('user_id'),
     sa.UniqueConstraint('user_id'),
     sa.UniqueConstraint('username'),
-    schema='meta'
+    sa.UniqueConstraint('license_id'),
+    schema="meta"
 )
 
 License = sa.Table(
-    'License',
+    "License",
     metadata,
     sa.Column('license_id', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
-    sa.Column('username', sa.String(), nullable=True),
+    sa.Column('username', sa.String(), nullable=False,unique=True),
+    sa.Column('password',sa.String(),nullable=False),
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('lastname', sa.String(), nullable=True),
     sa.Column('location', sa.String(), nullable=True),
     sa.Column('features', sa.ARRAY(sa.String()), nullable=True),
-    sa.Column('householdItems', sa.ARRAY(sa.String()), nullable=True),
+    sa.Column('HouseholdItems', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('SensorCount', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.Integer(), nullable=True),
+    sa.Column('updated_at', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('license_id'),
     sa.UniqueConstraint('license_id'),
     sa.UniqueConstraint('username'),
-    schema='meta'
+    schema="meta"
 )
 
 Permission = sa.Table(
-    'Permission',
+    "Permission",
     metadata,
     sa.Column('permission_id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
@@ -65,7 +71,7 @@ Permission = sa.Table(
     sa.Column('created_at', sa.Integer(), nullable=True),
     sa.Column('updated_at', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('permission_id'),
-    schema='meta'
+    schema="meta"
 )
 
 HouseItem = sa.Table(
@@ -158,20 +164,16 @@ def upgrade():
         User.name,
         *User.columns,
         *User.constraints,
-        schema='meta'
+        schema="meta"
     )
 
     op.create_table(
         License.name,
         *License.columns,
         *License.constraints,
-        schema='meta'
+        schema="meta"
     )
-    op.create_foreign_key(
-        'fk_license_username', License.name, User.name,
-        ['username'], ['username'],
-        source_schema='meta', referent_schema='meta'
-    )
+
 
     op.create_table(
         Permission.name,
