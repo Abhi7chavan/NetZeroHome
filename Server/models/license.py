@@ -1,18 +1,30 @@
-from Server.configuration.database import Base
+from pydantic import BaseModel
+from configuration.database import Base
 from sqlalchemy import Column,Integer,String,ARRAY
 import uuid
 class License(Base):
-    __tablename__ = 'license'
-    __table_args__ = {'schema': 'meta'} 
+    __tablename__ = "License"
+    __table_args__ = {'schema': "meta"} 
     
     license_id = Column(String,default=lambda:str(uuid.uuid4()),primary_key=True)
     name = Column(String)
-    username = Column(String,Foreignkey=('users.username'),unique=True)
-    email = Column(String)
     lastname = Column(String)
+    username = Column(String,unique=True)
+    password = Column(String)
+    email = Column(String)
     location = Column(String)
     features = Column(ARRAY(String))
-    household_items = Column(ARRAY(String))
-    sensor_count = Column(Integer)
+    householdItems = Column(ARRAY(String))
+    SensorCount = Column(Integer)
+     
     
-    
+class licenseschema(BaseModel):
+    name:str
+    lastname:str
+    username:str
+    password:str
+    email:str
+    location:str
+    features:list
+    householdItems:list
+    SensorCount:int

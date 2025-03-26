@@ -1,8 +1,7 @@
 import uuid
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from configuration.database import Base
 
 class Room(Base):
     __tablename__ = 'room'

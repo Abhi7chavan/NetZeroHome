@@ -1,8 +1,7 @@
 import uuid
 from sqlalchemy import Column, String, Float, Numeric, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from configuration.database import Base
 
 class HouseRoomItemMapping(Base):
     __tablename__ = 'house_room_item_mapping'
