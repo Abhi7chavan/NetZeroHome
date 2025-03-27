@@ -1,4 +1,5 @@
-from sqlalchemy import String,Column,func,Integer ,ARRAY ,DateTime
+from sqlalchemy import String,Column,BigInteger,Integer ,ARRAY ,text 
+import time
 import uuid
 from configuration.database import Base
 
@@ -14,5 +15,17 @@ class Users(Base):
     features = Column(ARRAY(String))
     HouseholdItems = Column(ARRAY(String))
     SensorCount = Column(Integer)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    role_id = Column(String,ForeignKey="role.role_id") #default role id Admin
+    created_at = Column(BigInteger, default=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
+    updated_at = Column(BigInteger, default=lambda: int(time.time()), onupdate=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
+    
+    
+class UserSchema:
+    license_id:str
+    username:str
+    email:str
+    password:str
+    location:str
+    features:str
+    HouseholdItems:ARRAY
+    SensorCount:ARRAY

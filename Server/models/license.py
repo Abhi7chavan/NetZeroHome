@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from configuration.database import Base
-from sqlalchemy import Column,Integer,String,ARRAY
+import time
+from sqlalchemy import Column,Integer,BigInteger,text,String,ARRAY
 import uuid
 class License(Base):
     __tablename__ = "License"
@@ -16,6 +17,8 @@ class License(Base):
     features = Column(ARRAY(String))
     HouseholdItems = Column(ARRAY(String))
     SensorCount = Column(Integer)
+    created_at = Column(BigInteger, default=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
+    updated_at = Column(BigInteger, default=lambda: int(time.time()), onupdate=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
      
     
 class licenseschema(BaseModel):

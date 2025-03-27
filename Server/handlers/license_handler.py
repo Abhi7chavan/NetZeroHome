@@ -13,3 +13,10 @@ async def create_license(userdata:licenseschema,db:Session=Depends(get_db)):
     if userdata:
         return await license_service.Create(userdata,db)
     l
+    
+    
+@license_router.put('/update/{license_id}')
+async def update_license(license_id:str,licensedata:licenseschema,db:Session=Depends(get_db)):
+    if licensedata:
+        
+        return await license_service.Update(licensedata,license_id,db)

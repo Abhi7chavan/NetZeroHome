@@ -1,5 +1,6 @@
 from configuration.database import Base
-from sqlalchemy import Column,String,ARRAY ,ForeignKey,JSON,DateTime,func
+import time
+from sqlalchemy import Column,String,ARRAY ,ForeignKey,JSON,BigInteger,text
 import uuid
 
 class Permission(Base):
@@ -8,5 +9,5 @@ class Permission(Base):
     permission_id = Column(String, default=lambda: str(uuid.uuid4()), primary_key=True)
     user_id = Column(String, ForeignKey('users.user_id'), nullable=False)
     config = Column(JSON)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(BigInteger, default=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
+    updated_at = Column(BigInteger, default=lambda: int(time.time()), onupdate=lambda: int(time.time()), server_default=text("EXTRACT(EPOCH FROM now())"))
