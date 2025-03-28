@@ -5,39 +5,36 @@ Revises:
 Create Date: 2025-03-21 17:42:05.174823
 """
 from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 
-# revision identifiers, used by Alembic.
-revision: str = '01407f473690'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision = '01407f473690'
+down_revision = None
+branch_labels = None
+depends_on = None
 
-# Define a MetaData instance to hold our table definitions.
+# Define MetaData instance
 metadata = sa.MetaData()
 
-# Define tables with a specified schema (in this case "meta")
+# Define tables
 User = sa.Table(
     "User",
     metadata,
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('license_id', sa.String(), nullable=False),
-    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),  # Removed duplicate password column
     sa.Column('email', sa.String(), nullable=True),
-    sa.Column('password', sa.String(), nullable=True),
     sa.Column('location', sa.String(), nullable=True),
     sa.Column('features', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('HouseholdItems', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('SensorCount', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
+    sa.Column('role_id', sa.String(), nullable=False),  # References role.role_id
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     sa.PrimaryKeyConstraint('user_id'),
-    sa.UniqueConstraint('user_id'),
     sa.UniqueConstraint('username'),
-    sa.UniqueConstraint('license_id'),
+    sa.UniqueConstraint('license_id'),  # Removed unique constraint on role_id
     schema="meta"
 )
 
@@ -46,19 +43,17 @@ License = sa.Table(
     metadata,
     sa.Column('license_id', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
-    sa.Column('username', sa.String(), nullable=False,unique=True),
-    sa.Column('password',sa.String(),nullable=False),
+    sa.Column('username', sa.String(), nullable=False, unique=True),
+    sa.Column('password', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('lastname', sa.String(), nullable=True),
     sa.Column('location', sa.String(), nullable=True),
     sa.Column('features', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('HouseholdItems', sa.ARRAY(sa.String()), nullable=True),
-    sa.Column('SensorCount', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.Integer(), nullable=True),
-    sa.Column('updated_at', sa.Integer(), nullable=True),
+    sa.Column('SensorCount', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     sa.PrimaryKeyConstraint('license_id'),
-    sa.UniqueConstraint('license_id'),
-    sa.UniqueConstraint('username'),
     schema="meta"
 )
 
@@ -68,8 +63,8 @@ Permission = sa.Table(
     sa.Column('permission_id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('config', sa.JSON(), nullable=True),
-    sa.Column('created_at', sa.Integer(), nullable=True),
-    sa.Column('updated_at', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     sa.PrimaryKeyConstraint('permission_id'),
     schema="meta"
 )
@@ -104,6 +99,17 @@ House = sa.Table(
     schema='meta'
 )
 
+Role = sa.Table(
+    'role',
+    metadata,
+    sa.Column('role_id', sa.String(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('permission', sa.JSON(), nullable=True),  # Renamed to 'permissions' for clarity
+    sa.PrimaryKeyConstraint('role_id'),
+    schema='meta'
+)
+
 Room = sa.Table(
     'Room',
     metadata,
@@ -120,6 +126,8 @@ Sensor = sa.Table(
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('category_id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     sa.PrimaryKeyConstraint('sensor_id'),
     schema='meta'
 )
@@ -141,6 +149,8 @@ HouseRoomItemMapping = sa.Table(
     sa.Column('room_id', sa.String(), nullable=False),
     sa.Column('sensor_id', sa.String(), nullable=False),
     sa.Column('item_id', sa.String(), nullable=False),
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     sa.PrimaryKeyConstraint('mapping_id'),
     schema='meta'
 )
@@ -152,19 +162,33 @@ HouseReading = sa.Table(
     sa.Column('Total_Energy', sa.Float(), nullable=False),
     sa.Column('cost', sa.Numeric(10, 2), nullable=False),
     sa.Column('time', sa.TIMESTAMP(), nullable=True),
+    sa.Column('created_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())")),
+    sa.Column('updated_at', sa.BigInteger, server_default=sa.text("EXTRACT(EPOCH FROM now())"), onupdate=sa.text("EXTRACT(EPOCH FROM now())")),
     schema='meta'
 )
 
 def upgrade():
-    # Create the "meta" schema if it does not exist
     op.execute("CREATE SCHEMA IF NOT EXISTS meta")
     
-    # Create tables using the defined metadata (all tables will be created in the "meta" schema)
+    # Create Role table first (master table)
+    op.create_table(
+        Role.name,
+        *Role.columns,
+        *Role.constraints,
+        schema='meta'
+    )
+    
+    # Create User table with correct foreign key
     op.create_table(
         User.name,
         *User.columns,
         *User.constraints,
         schema="meta"
+    )
+    op.create_foreign_key(
+        'fk_user_role', 'User', 'role',  # From User.role_id to role.role_id
+        ['role_id'], ['role_id'],
+        source_schema='meta', referent_schema='meta'
     )
 
     op.create_table(
@@ -174,7 +198,6 @@ def upgrade():
         schema="meta"
     )
 
-
     op.create_table(
         Permission.name,
         *Permission.columns,
@@ -182,7 +205,7 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_permission_user', Permission.name, User.name,
+        'fk_permission_user', 'Permission', 'User',
         ['user_id'], ['user_id'],
         source_schema='meta', referent_schema='meta'
     )
@@ -201,7 +224,7 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_house_user', House.name, User.name,
+        'fk_house_user', 'House', 'User',
         ['user_id'], ['user_id'],
         source_schema='meta', referent_schema='meta'
     )
@@ -213,7 +236,7 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_room_house', Room.name, House.name,
+        'fk_room_house', 'Room', 'House',
         ['house_id'], ['house_id'],
         source_schema='meta', referent_schema='meta'
     )
@@ -232,12 +255,12 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_sensor_user', Sensor.name, User.name,
+        'fk_sensor_user', 'Sensor', 'User',
         ['user_id'], ['user_id'],
         source_schema='meta', referent_schema='meta'
     )
     op.create_foreign_key(
-        'fk_sensor_category', Sensor.name, Category.name,
+        'fk_sensor_category', 'Sensor', 'Category',
         ['category_id'], ['category_id'],
         source_schema='meta', referent_schema='meta'
     )
@@ -249,22 +272,22 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_hrim_house', HouseRoomItemMapping.name, House.name,
+        'fk_hrim_house', 'HouseRoomItemMapping', 'House',
         ['house_id'], ['house_id'],
         source_schema='meta', referent_schema='meta'
     )
     op.create_foreign_key(
-        'fk_hrim_room', HouseRoomItemMapping.name, Room.name,
+        'fk_hrim_room', 'HouseRoomItemMapping', 'Room',
         ['room_id'], ['room_id'],
         source_schema='meta', referent_schema='meta'
     )
     op.create_foreign_key(
-        'fk_hrim_sensor', HouseRoomItemMapping.name, Sensor.name,
+        'fk_hrim_sensor', 'HouseRoomItemMapping', 'Sensor',
         ['sensor_id'], ['sensor_id'],
         source_schema='meta', referent_schema='meta'
     )
     op.create_foreign_key(
-        'fk_hrim_item', HouseRoomItemMapping.name, HouseItem.name,
+        'fk_hrim_item', 'HouseRoomItemMapping', 'HouseItem',
         ['item_id'], ['item_id'],
         source_schema='meta', referent_schema='meta'
     )
@@ -276,43 +299,44 @@ def upgrade():
         schema='meta'
     )
     op.create_foreign_key(
-        'fk_hr_user', HouseReading.name, User.name,
+        'fk_hr_user', 'HouseReading', 'User',
         ['user_id'], ['user_id'],
         source_schema='meta', referent_schema='meta'
     )
 
 def downgrade():
-    # Drop tables in reverse order, respecting dependencies
-    op.drop_constraint('fk_hr_user', HouseReading.name, schema='meta', type_='foreignkey')
-    op.drop_table(HouseReading.name, schema='meta')
+    # Drop in reverse order
+    op.drop_constraint('fk_hr_user', 'HouseReading', schema='meta', type_='foreignkey')
+    op.drop_table('HouseReading', schema='meta')
 
-    op.drop_constraint('fk_hrim_item', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
-    op.drop_constraint('fk_hrim_sensor', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
-    op.drop_constraint('fk_hrim_room', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
-    op.drop_constraint('fk_hrim_house', HouseRoomItemMapping.name, schema='meta', type_='foreignkey')
-    op.drop_table(HouseRoomItemMapping.name, schema='meta')
+    op.drop_constraint('fk_hrim_item', 'HouseRoomItemMapping', schema='meta', type_='foreignkey')
+    op.drop_constraint('fk_hrim_sensor', 'HouseRoomItemMapping', schema='meta', type_='foreignkey')
+    op.drop_constraint('fk_hrim_room', 'HouseRoomItemMapping', schema='meta', type_='foreignkey')
+    op.drop_constraint('fk_hrim_house', 'HouseRoomItemMapping', schema='meta', type_='foreignkey')
+    op.drop_table('HouseRoomItemMapping', schema='meta')
 
-    op.drop_constraint('fk_sensor_category', Sensor.name, schema='meta', type_='foreignkey')
-    op.drop_constraint('fk_sensor_user', Sensor.name, schema='meta', type_='foreignkey')
-    op.drop_table(Sensor.name, schema='meta')
+    op.drop_constraint('fk_sensor_category', 'Sensor', schema='meta', type_='foreignkey')
+    op.drop_constraint('fk_sensor_user', 'Sensor', schema='meta', type_='foreignkey')
+    op.drop_table('Sensor', schema='meta')
 
-    op.drop_table(Category.name, schema='meta')
+    op.drop_table('Category', schema='meta')
 
-    op.drop_constraint('fk_room_house', Room.name, schema='meta', type_='foreignkey')
-    op.drop_table(Room.name, schema='meta')
+    op.drop_constraint('fk_room_house', 'Room', schema='meta', type_='foreignkey')
+    op.drop_table('Room', schema='meta')
 
-    op.drop_constraint('fk_house_user', House.name, schema='meta', type_='foreignkey')
-    op.drop_table(House.name, schema='meta')
+    op.drop_constraint('fk_house_user', 'House', schema='meta', type_='foreignkey')
+    op.drop_table('House', schema='meta')
 
-    op.drop_table(HouseItem.name, schema='meta')
+    op.drop_table('HouseItem', schema='meta')
 
-    op.drop_constraint('fk_permission_user', Permission.name, schema='meta', type_='foreignkey')
-    op.drop_table(Permission.name, schema='meta')
+    op.drop_constraint('fk_permission_user', 'Permission', schema='meta', type_='foreignkey')
+    op.drop_table('Permission', schema='meta')
 
-    op.drop_constraint('fk_license_username', License.name, schema='meta', type_='foreignkey')
-    op.drop_table(License.name, schema='meta')
+    op.drop_table('License', schema='meta')
 
-    op.drop_table(User.name, schema='meta')
+    op.drop_constraint('fk_user_role', 'User', schema='meta', type_='foreignkey')
+    op.drop_table('User', schema='meta')
 
-    # Optionally, drop the schema itself
+    op.drop_table('role', schema='meta')
+
     op.execute("DROP SCHEMA IF EXISTS meta CASCADE")
