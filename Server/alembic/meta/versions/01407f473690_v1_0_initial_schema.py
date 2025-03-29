@@ -177,7 +177,6 @@ def upgrade():
         *Role.constraints,
         schema='meta'
     )
-    
     # Create User table with correct foreign key
     op.create_table(
         User.name,
